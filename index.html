@@ -96,7 +96,7 @@
         <span>posts</span>
       </div>
       <div class="article-info-block">
-        0
+        1
         <span>tag</span>
       </div>
     </div>
@@ -149,6 +149,11 @@
 
 
           
+  <div class="article-category">
+  	<i class="fa fa-folder"></i>
+    <a class="article-category-link" href="/categories/Reading-Note/">Reading Note</a>
+  </div>
+
         </div>
       </header>
     
@@ -180,15 +185,21 @@
 <h3 id="Tip_2:_Reduce_function_invokation">Tip 2: Reduce function invokation</h3><p>In <strong>combine2</strong> function, <strong>get_vec_element</strong> will be called once per iteration. In <strong>get_vec_element</strong> function, it will check the <strong>index</strong> param whether it is out of bound or not. Both the function call and the inner check is redundant. We can get the start address of the vector before the loop and access the vector data directly. Here is the third version of combine function, called <strong>combine3</strong>.<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data_t</span> *get_vec_start(vec_ptr v) &#123;</span><br><span class="line">    <span class="keyword">return</span> v-&gt;data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">combine3</span><span class="params">(vec_ptr v, data_t *dest)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> length = vec_length(v);</span><br><span class="line">    <span class="keyword">data_t</span> *data = get_vec_start(v);</span><br><span class="line"></span><br><span class="line">    *dest = IDENT;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span> ; i &lt; length ; ++ i) &#123;</span><br><span class="line">        *dest = *dest OP data[i];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>When gcc use O1 level optimization on my computer, the lift is not obvious. When gcc use O0 level optimization, <strong>combine3</strong> has 50% performance lift comparing with <strong>combine2</strong>.</p>
 <h3 id="Tip_3:_Eliminate_unnecessary_memory_reference">Tip 3: Eliminate unnecessary memory reference</h3><p>For each iteration in <strong>combine3</strong> function, it will load <strong>dest</strong>, do the operation and store the new value to <strong>dest</strong>. But we don’t need access <strong>dest</strong> memory every time actually. What we need is just store the result to <strong>dest</strong> before we return from the function. Here is the forth version of combine function, called <strong>combine4</strong>.<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">combine4</span><span class="params">(vec_ptr v, data_t *dest)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> length = vec_length(v);</span><br><span class="line">    <span class="keyword">data_t</span> *data = get_vec_start(v);</span><br><span class="line">    <span class="keyword">data_t</span> acc = IDENT;</span><br><span class="line"></span><br><span class="line">    *dest = IDENT;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span> ; i &lt; length ; ++ i) &#123;</span><br><span class="line">        acc = acc OP data[i];</span><br><span class="line">    &#125;</span><br><span class="line">    *dest = acc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>For a 10,000,000 vector on my computer, <strong>combine4</strong> use 4241 and the CPE is 1.06. The reason why performance lift so much is that we eliminate two unnecessary memory reference: read from <strong>dest</strong> and store to <strong>dest</strong>.<br>Here is the two inner loop ASM code:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LBB6_1:                                 ## %.lr.ph&#10;                                        ## =&#62;This Inner Loop Header: Depth=1&#10;&#9;movl&#9;(%rax), %ecx&#10;&#9;addl&#9;%ecx, (%r14)&#10;&#9;addq&#9;$4, %rax&#10;&#9;decq&#9;%rbx&#10;&#9;jne&#9;LBB6_1</span><br></pre></td></tr></table></figure></p>
+<p>For a 10,000,000 vector on my computer, <strong>combine4</strong> use 4241us and the CPE is 1.06. The reason why performance lift so much is that we eliminate two unnecessary memory reference: read from <strong>dest</strong> and store to <strong>dest</strong>.<br>Here is the two inner loop ASM code:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LBB6_1:                                 ## %.lr.ph&#10;                                        ## =&#62;This Inner Loop Header: Depth=1&#10;&#9;movl&#9;(%rax), %ecx&#10;&#9;addl&#9;%ecx, (%r14)&#10;&#9;addq&#9;$4, %rax&#10;&#9;decq&#9;%rbx&#10;&#9;jne&#9;LBB6_1</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LBB7_1:                                 ## %.lr.ph&#10;                                        ## =&#62;This Inner Loop Header: Depth=1&#10;&#9;addl&#9;(%rax), %ecx&#10;&#9;addq&#9;$4, %rax&#10;&#9;decq&#9;%rbx&#10;&#9;jne&#9;LBB7_1</span><br></pre></td></tr></table></figure>
-<h2 id="Leverage_Instrument_Parallel">Leverage Instrument Parallel</h2><h2 id="Useful_tool">Useful tool</h2>
+<p>The first one is <strong>combine3</strong>‘s ASM code and the second is <strong>combine4</strong>‘s. You can see there is a movl instruction in the beginning of each iteration and addl instruction store the result to a memory address. These are the two unnecessary memory reference.</p>
+<h1 id="Leverage_Instrument_Parallel">Leverage Instrument Parallel</h1><p>Modern CPU architecture has pipeline and superscalar which means it can emit more than one instruction in a CPU cycle. In <strong>combine4</strong>, however, next add instruction must wait the current instruction finish because they all depend on <strong>acc</strong> variable. The first add instruction must write the value to <strong>acc</strong>, then the second instruction can begin. So if we expend the loop and use multi variable to accumulate the result, we will leverage CPU’s pipeline and superscalar features. Here is the fifth version of combine called <strong>combine5</strong>.<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">combine5</span><span class="params">(vec_ptr v, data_t *dest)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> length = vec_length(v);</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">int</span> limit = length - <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">data_t</span> *data = get_vec_start(v);</span><br><span class="line">    <span class="keyword">data_t</span> acc0 = IDENT;</span><br><span class="line">    <span class="keyword">data_t</span> acc1 = IDENT;</span><br><span class="line">    <span class="keyword">data_t</span> acc2 = IDENT;</span><br><span class="line">    <span class="keyword">data_t</span> acc3 = IDENT;</span><br><span class="line"></span><br><span class="line">    *dest = IDENT;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span> ; i &lt; limit ; i += <span class="number">4</span>) &#123;</span><br><span class="line">        acc0 = acc0 OP data[i];</span><br><span class="line">        acc1 = acc1 OP data[i + <span class="number">1</span>];</span><br><span class="line">        acc2 = acc1 OP data[i + <span class="number">2</span>];</span><br><span class="line">        acc3 = acc1 OP data[i + <span class="number">3</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>( ; i &lt; length ; ++ i) &#123;</span><br><span class="line">        acc0 = acc0 OP data[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    *dest = acc0 OP acc1 OP acc2 OP acc3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>In <strong>combine5</strong>, we use four variables to do the accumulation. Besides the advantage of pipeline and superscalar, it also reduce the loop condition judgement time and loop index increase operation time. They both are not the major part of the combine function. For a 10,000,000 vector on my computer, <strong>combine5</strong> use 2898us and the CPE is 0.72.</p>
+<p>Above it all test on <strong>int</strong> type addition, Here we also give a conclusion table for <strong>float</strong> type addition. You can see even using O2 level optimization, <strong>combine5</strong>‘s CPE is <strong>combine1</strong>‘s half.<br>Function | -O1 us | -O1 CPE | -O2 us | -O2 CPE<br>:—————|:—————|:—————|:—————|:—————<br>combine1 | 34013 | 8.5 | 9136 | 2.28<br>combine5 | 6023 | 1.5 | 4508 | 1.12`</p>
+<h2 id="Useful_tool">Useful tool</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shijianguang.github.io/2015/08/16/CSAPP-Optimizing-Program-Performance/" data-id="cidk5vk2o000031byl1ej0e0q" class="article-share-link">Share</a>
+      <a data-url="http://shijianguang.github.io/2015/08/16/CSAPP-Optimizing-Program-Performance/" data-id="cidkabxr00000srbyn8kh3js8" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/System-Programming/">System Programming</a></li></ul>
+
     </footer>
   </div>
   
@@ -240,7 +251,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shijianguang.github.io/2015/08/16/hello-world/" data-id="cidk5vk3c000131bykj1exg97" class="article-share-link">Share</a>
+      <a data-url="http://shijianguang.github.io/2015/08/16/hello-world/" data-id="cidkabxrv0005srbyy9kahkcp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -271,7 +282,7 @@
             </div>
             
             <div class="item-inner">
-              <p class="item-category"></p>
+              <p class="item-category"><a class="article-category-link" href="/categories/Reading-Note/">Reading Note</a></p>
               <p class="item-title"><a href="/2015/08/16/CSAPP-Optimizing-Program-Performance/" class="title">Optimizing Program Performance</a></p>
               <p class="item-date"><time datetime="2015-08-16T05:54:40.000Z" itemprop="datePublished">2015-08-16</time></p>
             </div>
@@ -300,10 +311,31 @@
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Note/">Reading Note</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/System-Programming/">System Programming</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">tag cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/System-Programming/" style="font-size: 10px;">System Programming</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">

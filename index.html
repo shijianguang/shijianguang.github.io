@@ -86,18 +86,18 @@
     <div class="base-info profile-block">
       <img id="avatar" src="/css/images/avatar.png">
       <h2 id="name">Jianguang Shi</h2>
-      <h3 id="title">Backend Develop</h3>
+      <h3 id="title">Backend Developer</h3>
       <span id="location"><i class="fa fa-map-marker"></i>Beijing, China</span>
       <a id="follow" href="null">FOLLOW</a>
     </div>
     <div class="article-info profile-block">
       <div class="article-info-block">
-        1
-        <span>post</span>
+        2
+        <span>posts</span>
       </div>
       <div class="article-info-block">
-        1
-        <span>tag</span>
+        2
+        <span>tags</span>
       </div>
     </div>
     
@@ -125,6 +125,148 @@
 
       
       <section id="main">
+      <article id="post-Tips-of-Java" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/15/Tips-of-Java/">Tips of Java</a>
+    </h1>
+  
+
+        <div class="article-meta">
+          
+  <div class="article-date">
+    <i class="fa fa-calendar"></i>
+    <a href="/2016/08/15/Tips-of-Java/">
+      <time datetime="2016-08-15T07:38:50.000Z" itemprop="datePublished">2016-08-15</time>
+    </a>
+  </div>
+
+
+          
+        </div>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+                
+        <h2 id="1-_Collection_类型">1. Collection 类型</h2><p>在Java中，我们考虑一下 <strong>Set</strong> 和 <strong>Set&lt;?&gt;</strong> 这两种方式的区别，参见如下code:</p>
+<pre><code><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(List <span class="built_in">list</span>, Object o)</span> </span>{
+        <span class="built_in">list</span>.add(o);
+}
+
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
+        List&lt;String&gt; <span class="built_in">list</span> = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        add(<span class="built_in">list</span>, <span class="number">10</span>);
+        System.out.println(<span class="built_in">list</span>.get(<span class="number">0</span>));
+}
+</code></pre><p>这段code在编译的时候不会出现问题，但运行的时候会在 <code>list.get(0)</code> 处抛出异常：</p>
+<pre><code>Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java<span class="class">.lang</span><span class="class">.ClassCastException</span>: java<span class="class">.lang</span><span class="class">.Integer</span> cannot be cast to java<span class="class">.lang</span><span class="class">.String</span>
+</code></pre><p>这里主要因为Java的泛型是通过编译时期保障的，如果使用原始类型，即像 <code>List</code> 这样的类型，就跳过了编译时的参数检查，所以这个类型的错误就被推迟到了运行时才体现出来。</p>
+<p>接下来我们看一下 <strong>Set</strong> 和 <strong>Set&lt;?&gt;</strong> 的区别。<br>首先我们看一下 <strong>Set&lt;?&gt;</strong> 的两条准则：</p>
+<ol>
+<li>由于？是通配符，表示任意类型，所以Set&lt;?&gt;可以保存任何类型的数据</li>
+<li>由于我们不知道？表示什么类型，所以我们不能像Set&lt;?&gt;中添加元素</li>
+</ol>
+<p>这两句话看似矛盾，我们通过两个例子分别说明第一点和第二点<br>针对第一点，从如下的代码中可以看到，使用<strong>List&lt;?&gt;</strong>做参数，我们可以将<strong>List<integer></integer></strong>和<strong>List<string></string></strong>传给print函数，同事print函数里面可以使用Object进行循环：</p>
+<pre><code><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
+    List&lt;Integer&gt; l1 = <span class="keyword">new</span> ArrayList&lt;&gt;();
+    printList(l1);
+
+    List&lt;String&gt; l2 = <span class="keyword">new</span> ArrayList&lt;&gt;();
+    printList(l2);
+}
+
+<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printSet</span><span class="params">(List&lt;?&gt; <span class="built_in">list</span>)</span> </span>{
+    <span class="keyword">for</span>(Object ele : <span class="built_in">list</span>) {
+        System.out.println(ele)
+    }
+}
+</code></pre><p>针对第二点，从如下的非法code片段中可以理解它，这里<strong>list.add(10)</strong>是非法的，因为他是<strong>List&lt;?&gt;</strong>类型，无法确定泛型的类型，所以无法添加元素到其中:</p>
+<pre><code><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printSet</span><span class="params">(List&lt;?&gt; <span class="built_in">list</span>)</span> </span>{
+    <span class="built_in">list</span>.add(<span class="number">10</span>);
+    <span class="keyword">for</span>(Object ele : <span class="built_in">list</span>) {
+        System.out.println(ele)
+    }
+}
+</code></pre><p>如果上述code中，将类型从<strong>List&lt;?&gt;</strong>换乘<strong>List</strong>，那么就不会有问题。但存在类型不安全的隐患，因为<strong>List</strong>类型跳过了类型检查。</p>
+<p>所以<strong>&lt;?&gt;</strong>只能被用在参数中，当你不关心传入的泛型具体是什么类型是，可以使用<strong>&lt;?&gt;</strong></p>
+<h2 id="2-_静态常量初始化问题">2. 静态常量初始化问题</h2><p>最近在工作中遇到了一个关于静态初始化的问题，这个问题可以抽象成下面的代码片段来展示问题的根源：</p>
+<pre><code><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] argvs</span>) </span>{
+    System.<span class="keyword">out</span>.println(StaticFinalInit.TEXT);
+    System.<span class="keyword">out</span>.println(StaticInit.TEXT);
+
+    StaticArrayInit[] array = <span class="keyword">new</span> StaticArrayInit[<span class="number">10</span>];
+    System.<span class="keyword">out</span>.println(array.length);
+}
+
+<span class="keyword">static</span> <span class="keyword">class</span> <span class="title">StaticFinalInit</span> {
+    <span class="keyword">public</span> <span class="keyword">static</span> final String TEXT = <span class="string">"Hello"</span>;
+
+    <span class="keyword">static</span> {
+        System.<span class="keyword">out</span>.println(<span class="string">"Static Final Init"</span>);
+    }
+}
+
+<span class="keyword">static</span> <span class="keyword">class</span> <span class="title">StaticInit</span> {
+    <span class="keyword">public</span> <span class="keyword">static</span> String TEXT = <span class="string">"Hello"</span>;
+
+    <span class="keyword">static</span> {
+        System.<span class="keyword">out</span>.println(<span class="string">"Static Init"</span>);
+    }
+}
+
+<span class="keyword">static</span> <span class="keyword">class</span> <span class="title">StaticArrayInit</span> {
+    <span class="keyword">public</span> <span class="keyword">static</span> String TEXT = <span class="string">"Hello"</span>;
+
+    <span class="keyword">static</span> {
+        System.<span class="keyword">out</span>.println(<span class="string">"Static Array Init"</span>);
+    }
+}
+
+<span class="keyword">static</span> <span class="keyword">class</span> <span class="title">NonRefStatic</span> {
+    <span class="keyword">public</span> <span class="keyword">static</span> String TEXT = <span class="string">"Hello"</span>;
+
+    <span class="keyword">static</span> {
+        System.<span class="keyword">out</span>.println(<span class="string">"Non Ref Static Init"</span>);
+    }
+}
+
+Output:
+Hello
+Static Init
+Hello
+<span class="number">10</span>
+</code></pre><p>从结果上可以发现如下问题：</p>
+<ol>
+<li>NonRefStatic这个类的静态初始化函数并没有被调用，这是因为我们的整个代码中并没有引用到这个类，所以这个类没有被加载，而静态初始化函数是在类加载过程中被调用，所以NonRefStatic的静态构造函数并没有被调用</li>
+<li>StaticFinalInit这个类的静态初始化函数也没有被调用，这是因为TEXT是一个常量字段，编译的时候这个常量会进入常量池，调用的时候直接访问常量池，并没有引用定义常量的类，所以定义常量的类相当于没有被加载，所以静态构造函数没有被调用</li>
+<li>Java实例化数组是，并没有实例化数组中的每一个元素，不会触发这个类的各种初始化过程</li>
+</ol>
+<p>在工作中遇到的问题与第二点比较相像。工程中定义了一个ConfigUtil类，里面定义了一些系统参数，并同时在resource中加入config.properties文件，ConfigUtil类在静态初始化是去加载这个resource文件，在config.properties文件中将配置项的名字命名成与ConfigUtil类中的名字一样，这样通过反射自动将ConfigUtil中的系统参数变量的值替换为文件中的值，并且新增配置项只要遵守这个规则，在两个地方定义名字相同，就可自动加载。但期初这个方法并不生效，配置文件中的取值时候加载不到ConfigUtil类中，最后经排查，问题与第二点类似，因为在ConfigUtil中将变量生命成了final，并且给了默认值，所以当程序读取ConfigUtil中的变量时，直接读取常量池，根本没有出发静态初始化</p>
+<p>Java中的各种初始化调用顺序：静态变量定义时的初始化值-&gt;静态初始化快-&gt;普通变量定义时的初始化值-&gt;初始化块-&gt;构造函数</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://shijianguang.github.io/2016/08/15/Tips-of-Java/" data-id="cirvrf84j0006e3byikf4c3h5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+    
       <article id="post-CSAPP-Optimizing-Program-Performance" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -195,7 +337,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shijianguang.github.io/2015/08/16/CSAPP-Optimizing-Program-Performance/" data-id="cido02hoi0000hwfytws1yvmo" class="article-share-link">Share</a>
+      <a data-url="http://shijianguang.github.io/2015/08/16/CSAPP-Optimizing-Program-Performance/" data-id="cirvrf83g0000e3by7f31o16o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/System-Programming/">System Programming</a></li></ul>
@@ -216,6 +358,23 @@
     <h3 class="widget-title">recents</h3>
     <div class="widget">
       <ul id="recent-post" class="">
+        
+          <li>
+            
+            <div class="item-thumbnail">
+              <a href="/2016/08/15/Tips-of-Java/" class="thumbnail">
+  
+    <span class="thumbnail-image thumbnail-none"></span>
+  
+</a>
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category"></p>
+              <p class="item-title"><a href="/2016/08/15/Tips-of-Java/" class="title">Tips of Java</a></p>
+              <p class="item-date"><time datetime="2016-08-15T07:38:50.000Z" itemprop="datePublished">2016-08-15</time></p>
+            </div>
+          </li>
         
           <li>
             
@@ -252,7 +411,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/System-Programming/">System Programming</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/System-Programming/">System Programming</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -261,7 +420,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">tag cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/System-Programming/" style="font-size: 10px;">System Programming</a>
+      <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/System-Programming/" style="font-size: 10px;">System Programming</a>
     </div>
   </div>
 
@@ -270,7 +429,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -283,7 +442,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2015 Jianguang Shi<br>
+      &copy; 2015 - 2016 Jianguang Shi<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
     </div>
   </div>

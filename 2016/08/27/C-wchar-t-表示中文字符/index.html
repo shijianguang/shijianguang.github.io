@@ -5,16 +5,19 @@
   
   <title>C++ wchar_t 表示中文字符 | Fly High</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Hexo theme - Icarus">
+  <meta name="description" content="最近在工作中使用了一个开源的，基于C语言的Double Array Trie数据结构来构造keywords字典。这个开源版本的实现中，将uint32重定义为内部的AlphaChar类型，用来表示一个字符。而这样的表示方法，让自己在coding过程中需要进一步了解C/C++中如何表示和存储一个中文字符。
+编码相关知识最早的字符编码是ASCII编码，使用7个bit表示一个字符，一共能表示128个字符。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++ wchar_t 表示中文字符">
 <meta property="og:url" content="http://shijianguang.github.io/2016/08/27/C-wchar-t-表示中文字符/index.html">
 <meta property="og:site_name" content="Fly High">
-<meta property="og:description" content="Hexo theme - Icarus">
-<meta property="og:updated_time" content="2016-08-27T12:38:01.000Z">
+<meta property="og:description" content="最近在工作中使用了一个开源的，基于C语言的Double Array Trie数据结构来构造keywords字典。这个开源版本的实现中，将uint32重定义为内部的AlphaChar类型，用来表示一个字符。而这样的表示方法，让自己在coding过程中需要进一步了解C/C++中如何表示和存储一个中文字符。
+编码相关知识最早的字符编码是ASCII编码，使用7个bit表示一个字符，一共能表示128个字符。">
+<meta property="og:updated_time" content="2016-08-27T13:06:32.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++ wchar_t 表示中文字符">
-<meta name="twitter:description" content="Hexo theme - Icarus">
+<meta name="twitter:description" content="最近在工作中使用了一个开源的，基于C语言的Double Array Trie数据结构来构造keywords字典。这个开源版本的实现中，将uint32重定义为内部的AlphaChar类型，用来表示一个字符。而这样的表示方法，让自己在coding过程中需要进一步了解C/C++中如何表示和存储一个中文字符。
+编码相关知识最早的字符编码是ASCII编码，使用7个bit表示一个字符，一共能表示128个字符。">
   
   
     <link rel="icon" href="favicon.png">
@@ -160,7 +163,9 @@
     <div class="article-entry" itemprop="articleBody">
       
                 
-        
+        <p>最近在工作中使用了一个开源的，基于C语言的<a href="https://linux.thai.net/~thep/datrie/datrie.html" target="_blank" rel="external">Double Array Trie数据结构</a>来构造keywords字典。这个开源版本的实现中，将uint32重定义为内部的AlphaChar类型，用来表示一个字符。而这样的表示方法，让自己在coding过程中需要进一步了解C/C++中如何表示和存储一个中文字符。</p>
+<h2 id="编码相关知识">编码相关知识</h2><p>最早的字符编码是ASCII编码，使用7个bit表示一个字符，一共能表示128个字符。这对于英文内容来说已经足够了，但无法结果多国语言的问题，比如无法表示中文。而为了统一字符编码的问题，Unicode编码逐渐成为了一种现行的标准，它能够编码100多万中字符，每一个字符都有唯一的一个Unicode值与之对应。<br>Unicode虽然为多国语言的字符都定义了统一的编码，但并没有定义如何在计算机中表示这种编码。这里会存在诸多问题，比如Unicode使用多个自己进行编码，那么计算机如何知道当前这个字节是要表示一个ASCII字符，还是要表示一个Unicode字符中的一个字节。而这里就引出了大家平时常见UTF-8, UTF-16, UTF-32这些概念。它们和Unicode有什么关系呢？简单来说<strong>UTF-8, UTF-16, UTF-32都是Unicode的一种具体实现。Unicode定义了每个字符对应的Unicode值，而这几种实现定了如何在计算机中表示这个值。这其中UTF-8是一种广泛使用的实现方法。他是一种变长编码，用1到4个字节来表示一个字符。具体内容可以参见<a href="http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html" target="_blank" rel="external">这篇博客</a></strong></p>
+
       
     </div>
     <footer class="article-footer">

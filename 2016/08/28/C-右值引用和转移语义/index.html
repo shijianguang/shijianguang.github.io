@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>C++ 右值引用和转移语义 | Fly High</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="右值引用(Rvalue Reference)是C++11标准中引入的特性，基于右值引用，C++11实现了转移语义(Move Sementics)和精确传递(Perfect Forwarding)。这几个特性也是C++11中的重要的新特性，用以提升C++语言的核心性能和计算速度。主要体现在一下方面：
+
+以右值引用为基础的转移语义，消除了对象交互时不必要的对象拷贝，节省运算存储资源，提高效率。
+精确传">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 右值引用和转移语义">
+<meta property="og:url" content="http://shijianguang.github.io/2016/08/28/C-右值引用和转移语义/index.html">
+<meta property="og:site_name" content="Fly High">
+<meta property="og:description" content="右值引用(Rvalue Reference)是C++11标准中引入的特性，基于右值引用，C++11实现了转移语义(Move Sementics)和精确传递(Perfect Forwarding)。这几个特性也是C++11中的重要的新特性，用以提升C++语言的核心性能和计算速度。主要体现在一下方面：
+
+以右值引用为基础的转移语义，消除了对象交互时不必要的对象拷贝，节省运算存储资源，提高效率。
+精确传">
+<meta property="og:updated_time" content="2016-08-29T16:13:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ 右值引用和转移语义">
+<meta name="twitter:description" content="右值引用(Rvalue Reference)是C++11标准中引入的特性，基于右值引用，C++11实现了转移语义(Move Sementics)和精确传递(Perfect Forwarding)。这几个特性也是C++11中的重要的新特性，用以提升C++语言的核心性能和计算速度。主要体现在一下方面：
+
+以右值引用为基础的转移语义，消除了对象交互时不必要的对象拷贝，节省运算存储资源，提高效率。
+精确传">
+  
+  
+    <link rel="icon" href="favicon.png">
+  
+  <link href='//fonts.useso.com/css?family=Open+Sans:400italic,400,600' rel='stylesheet' type='text/css'>
+  <link href="//fonts.useso.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css" type="text/css">
+  
+
+  
+</head>
+<body>
+  <div id="container">
+    <header id="header">
+  <div id="header-main" class="header-inner">
+    <div class="outer">
+      <a href="/" id="logo"><i class="logo" style="background-image: url(/css/images/logo.png)"></i><span class="site-title">Fly High</span></a>
+      <nav id="main-nav">
+        
+          <a class="main-nav-link" href="/.">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/categories">Categories</a>
+        
+          <a class="main-nav-link" href="/tags">Tags</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      
+        <nav id="sub-nav">
+          <div class="profile" id="profile-nav">
+            <a id="profile-anchor" href="javascript:;"><img class="avatar" src="/css/images/avatar.png"><i class="fa fa-caret-down"></i></a>
+          </div>
+        </nav>
+      
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit"> </button><input type="hidden" name="sitesearch" value="http://shijianguang.github.io"></form>
+      </div>
+    </div>
+  </div>
+  <div id="main-nav-mobile" class="header-sub header-inner">
+    <table class="menu outer">
+      <tr>
+        
+          <td><a class="main-nav-link" href="/.">Home</a></td>
+        
+          <td><a class="main-nav-link" href="/archives">Archives</a></td>
+        
+          <td><a class="main-nav-link" href="/categories">Categories</a></td>
+        
+          <td><a class="main-nav-link" href="/tags">Tags</a></td>
+        
+          <td><a class="main-nav-link" href="/about">About</a></td>
+        
+        <td>
+          <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><input type="hidden" name="sitesearch" value="http://shijianguang.github.io"></form>
+        </td>
+      </tr>
+    </table>
+  </div>
+</header>
+
+    <div class="outer">
+      
+        <aside id="profile">
+  <div class="inner profile-inner">
+    <div class="base-info profile-block">
+      <img id="avatar" src="/css/images/avatar.png">
+      <h2 id="name">Jianguang Shi</h2>
+      <h3 id="title">Backend Developer</h3>
+      <span id="location"><i class="fa fa-map-marker"></i>Beijing, China</span>
+      <a id="follow" href="null">FOLLOW</a>
+    </div>
+    <div class="article-info profile-block">
+      <div class="article-info-block">
+        4
+        <span>posts</span>
+      </div>
+      <div class="article-info-block">
+        4
+        <span>tags</span>
+      </div>
+    </div>
+    
+    <div class="contact-info profile-block">
+      <table class="contact-list">
+        <tr>
+          
+          <td><a href="http://github.com/ppoffice/hexo-theme-icarus" target="_blank" title="github"><i class="fa fa-github"></i></a></td>
+          
+          <td><a href="/#" target="_blank" title="twitter"><i class="fa fa-twitter"></i></a></td>
+          
+          <td><a href="/#" target="_blank" title="facebook"><i class="fa fa-facebook"></i></a></td>
+          
+          <td><a href="/#" target="_blank" title="dribbble"><i class="fa fa-dribbble"></i></a></td>
+          
+          <td><a href="/atom.xml" target="_blank" title="rss"><i class="fa fa-rss"></i></a></td>
+          
+        </tr>
+      </table>
+    </div>
+    
+    
+  </div>
+</aside>
+
+      
+      <section id="main"><article id="post-C-右值引用和转移语义" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C++ 右值引用和转移语义
+    </h1>
+  
+
+        <div class="article-meta">
+          
+  <div class="article-date">
+    <i class="fa fa-calendar"></i>
+    <a href="/2016/08/28/C-右值引用和转移语义/">
+      <time datetime="2016-08-28T04:13:02.000Z" itemprop="datePublished">2016-08-28</time>
+    </a>
+  </div>
+
+
+          
+        </div>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+                
+        <p>右值引用(Rvalue Reference)是C++11标准中引入的特性，基于右值引用，C++11实现了转移语义(Move Sementics)和精确传递(Perfect Forwarding)。这几个特性也是C++11中的重要的新特性，用以提升C++语言的核心性能和计算速度。主要体现在一下方面：</p>
+<ol>
+<li>以右值引用为基础的转移语义，消除了对象交互时不必要的对象拷贝，节省运算存储资源，提高效率。</li>
+<li>精确传递能够使开发者更简洁明确的定义泛型函数。</li>
+</ol>
+<h2 id="传统C++中的对象构造、拷贝构造和赋值操作">传统C++中的对象构造、拷贝构造和赋值操作</h2><p>在探讨右值引用的问题之前，我们先来看一下C++11之前的代码中，对象的传递是如何进行的。在C++11之前，对象的传递主要跟构造函数，拷贝构造函数和赋值构造函数。具体参见实例程序：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">class</span> MyString &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">char</span>* _data;</span><br><span class="line">    <span class="keyword">size_t</span> _len;</span><br><span class="line">    <span class="keyword">void</span> _init_data(<span class="keyword">const</span> <span class="keyword">char</span> *s) &#123;</span><br><span class="line">        _data = <span class="keyword">new</span> <span class="keyword">char</span>[_len + <span class="number">1</span>];</span><br><span class="line">        <span class="built_in">memcpy</span>(_data, s, _len);</span><br><span class="line">        _data[_len] = <span class="string">'\0'</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MyString() &#123;</span><br><span class="line">        _data = <span class="literal">NULL</span>;</span><br><span class="line">        _len = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyString(<span class="keyword">const</span> <span class="keyword">char</span>* p) &#123;</span><br><span class="line">        <span class="keyword">if</span>(p == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            _len = <span class="number">0</span>;</span><br><span class="line">            _data = <span class="literal">NULL</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            _len = <span class="built_in">strlen</span>(p);</span><br><span class="line">            _init_data(p);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Constructor is called! source: "</span> &lt;&lt; (_data == <span class="literal">NULL</span> ? <span class="string">"NULL"</span> : _data) &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyString(<span class="keyword">const</span> MyString&amp; str) &#123;</span><br><span class="line">        <span class="keyword">if</span> (str._len == <span class="number">0</span> &amp;&amp; str._data == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            _len = <span class="number">0</span>;</span><br><span class="line">            _data = <span class="literal">NULL</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            _len = str._len;</span><br><span class="line">            _init_data(str._data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Copy Constructor is called! source: "</span> &lt;&lt; (_data == <span class="literal">NULL</span> ? <span class="string">"NULL"</span> : _data)</span><br><span class="line">                &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyString&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> MyString&amp; str) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;str) &#123;</span><br><span class="line">            <span class="keyword">if</span> (str._len == <span class="number">0</span> &amp;&amp; str._data == <span class="literal">NULL</span>) &#123;</span><br><span class="line">                _len = <span class="number">0</span>;</span><br><span class="line">                _data = <span class="literal">NULL</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                _len = str._len;</span><br><span class="line">                _init_data(str._data);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Copy Assignment is called! source: "</span> &lt;&lt; (_data == <span class="literal">NULL</span> ? <span class="string">"NULL"</span> : _data)</span><br><span class="line">                &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">char</span> * <span class="title">get_data</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> _data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">virtual</span> ~MyString() &#123;</span><br><span class="line">        <span class="keyword">if</span> (_data != <span class="literal">NULL</span>)</span><br><span class="line">            <span class="keyword">delete</span> _data;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Deconstructor is called"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">MyString <span class="title">get_new_string</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"Hello World 5"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"##########Begin Rvalue Test##########"</span> &lt;&lt; endl;</span><br><span class="line">    MyString a;</span><br><span class="line">    MyString b = <span class="string">"Hello World 1"</span>;</span><br><span class="line">    a = MyString(<span class="string">"Hello world 2"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;MyString&gt; vec;</span><br><span class="line">    vec.reserve(<span class="number">128</span>);</span><br><span class="line">    vec.push_back(<span class="string">"Hello World 3"</span>);</span><br><span class="line">    MyString c = get_new_string();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c.get_data() &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"##########End Rvalue Test##########"</span> &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实例程序的输出是：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">##########Begin Rvalue Test##########</span></span><br><span class="line">Constructor is called! source: Hello World <span class="number">1</span></span><br><span class="line">Constructor is called! source: Hello world <span class="number">2</span></span><br><span class="line">Copy Assignment is called! source: Hello world <span class="number">2</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Constructor is called! source: Hello World <span class="number">3</span></span><br><span class="line">Copy Constructor is called! source: Hello World <span class="number">3</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Constructor is called! source: Hello World <span class="number">5</span></span><br><span class="line">Hello World <span class="number">5</span></span><br><span class="line"><span class="preprocessor">##########End Rvalue Test##########</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br></pre></td></tr></table></figure>
+<p>从实例中可以得到如下的结论：</p>
+<ol>
+<li>虽然关于b的表达式是 <figure class="highlight"><figcaption><span>= "Hello World 1"```，但因为是出现在变量定义的阶段，所以是一个初始化操作，调用了参数是const char \* 的构造函数。</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> 2. &#20351;&#29992;&#19968;&#20010;&#20020;&#26102;&#23545;&#35937;MyString(&#34;Hello World 2&#34;)&#36171;&#20540;&#32473;&#21464;&#37327;a&#65292;&#36825;&#20010;&#36807;&#31243;&#20013;&#65292;&#20020;&#26102;&#21464;&#37327;&#38656;&#35201;&#35843;&#29992;&#26500;&#36896;&#20989;&#25968;&#65292;&#28982;&#21518;&#36890;&#36807;&#25335;&#36125;&#26500;&#36896;&#20989;&#25968;&#23436;&#25104;&#23545;a&#30340;&#36171;&#20540;&#65292;&#26368;&#21518;&#36890;&#36807;&#26512;&#26500;&#20989;&#25968;&#37322;&#25918;&#25481;&#36825;&#20010;&#20020;&#26102;&#23545;&#35937;&#12290;&#10; 3. &#21521;vector&#20013;&#25918;&#20837;&#19968;&#20010;&#8221;Hello World 3&#8220;&#23545;&#35937;&#65292;&#39318;&#20808;&#36890;&#36807;const char *&#26500;&#36896;&#20989;&#25968;&#26500;&#36896;&#19968;&#20010;&#20020;&#26102;&#23545;&#35937;&#65292;&#28982;&#21518;&#22312;push_back&#20989;&#25968;&#20869;&#37096;&#36890;&#36807;&#25335;&#36125;&#26500;&#36896;&#20989;&#25968;&#65292;&#23558;&#36825;&#20010;&#20020;&#26102;&#23545;&#35937;&#25335;&#36125;&#21040;vector&#20869;&#37096;&#30340;&#23384;&#20648;&#31354;&#38388;&#20013;&#65292;&#26368;&#21518;&#36890;&#36807;&#26512;&#26500;&#20989;&#25968;&#37322;&#25918;&#20020;&#26102;&#23545;&#35937;&#12290;&#10; 4. get_new_string()&#20989;&#25968;&#36820;&#22238;&#19968;&#20010;MyString&#30340;&#23545;&#35937;&#65292;&#36825;&#37324;&#27809;&#26377;&#20135;&#29983;&#20020;&#26102;&#23545;&#35937;&#65292;&#25191;&#34892;&#25335;&#36125;&#26500;&#36896;&#30340;&#21407;&#22240;&#26159;gcc&#32534;&#35793;&#22120;&#20351;&#29992;&#20102;&#36820;&#22238;&#20540;&#20248;&#21270;&#65292;&#36991;&#20813;&#20102;&#23545;&#20110;&#30340;&#35843;&#29992;&#12290;&#10;&#10;## &#24038;&#20540;&#21644;&#21491;&#20540;&#10;&#10;C++( &#21253;&#25324; C) &#20013;&#25152;&#26377;&#30340;&#34920;&#36798;&#24335;&#21644;&#21464;&#37327;&#35201;&#20040;&#26159;&#24038;&#20540;&#65292;&#35201;&#20040;&#26159;&#21491;&#20540;&#12290;&#36890;&#20439;&#30340;&#24038;&#20540;&#30340;&#23450;&#20041;&#23601;&#26159;&#38750;&#20020;&#26102;&#23545;&#35937;&#65292;&#37027;&#20123;&#21487;&#20197;&#22312;&#22810;&#26465;&#35821;&#21477;&#20013;&#20351;&#29992;&#30340;&#23545;&#35937;&#12290;&#25152;&#26377;&#30340;&#21464;&#37327;&#37117;&#28385;&#36275;&#36825;&#20010;&#23450;&#20041;&#65292;&#22312;&#22810;&#26465;&#20195;&#30721;&#20013;&#37117;&#21487;&#20197;&#20351;&#29992;&#65292;&#37117;&#26159;&#24038;&#20540;&#12290;&#21491;&#20540;&#26159;&#25351;&#20020;&#26102;&#30340;&#23545;&#35937;&#65292;&#23427;&#20204;&#21482;&#22312;&#24403;&#21069;&#30340;&#35821;&#21477;&#20013;&#26377;&#25928;&#12290;&#27604;&#22914;&#19978;&#36848;&#23454;&#20363;&#20195;&#30721;&#20013;&#65292;&#21464;&#37327;a, b, vec, c&#37117;&#26159;&#24038;&#20540;&#65292;&#32780;&#34;Hello World1&#34;, MyString(&#34;Hellow World 2&#34;) &#21644; &#34;Hello World 5&#34;&#37117;&#26159;&#21491;&#20540;&#12290;&#10;&#10;&#22312;C++&#20013;&#65292;&#24038;&#20540;&#30340;&#24341;&#29992;&#20351;&#29992;&#31526;&#21495; ```&#38;``` &#34920;&#31034;&#65292;&#21491;&#20540;&#30340;&#24341;&#29992;&#36890;&#36807; ```&#38;&#38;```&#34920;&#31034;&#65292;&#27604;&#22914;&#65306;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>int a = 1;<br>int &amp; b = a;  //左值引用<br>int &amp;&amp; c = 1; //右值引用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#31034;&#20363;&#31243;&#24207;&#65306;&#10;&#10;```C++&#10;void process_function(int &#38; i) &#123;&#10;    cout &#60;&#60; &#34;Left Value: &#34; &#60;&#60; i &#60;&#60; endl;&#10;&#125;&#10;&#10;void process_function(int &#38;&#38; i) &#123;&#10;    cout &#60;&#60; &#34;Right Value: &#34; &#60;&#60; i &#60;&#60; endl;&#10;&#125;&#10;&#10;void right_value_2_left_value(int &#38;&#38; i) &#123;&#10;    process_function(i);&#10;&#125;&#10;&#10;int main(int argc, char ** argv) &#123;&#10;    int i = 1;&#10;    process_function(i);&#10;    process_function(2);&#10;    right_value_2_left_value(3);&#10;&#125;&#10;&#10;//&#36816;&#34892;&#32467;&#26524;&#10;Left Value: 1&#10;Right Value: 2&#10;Left Value: 3</span><br></pre></td></tr></table></figure></p>
+<p>可以看出，<strong>i</strong> 被当做左值进行传递，<strong>2</strong> 被当做右值进行传递，<strong>3</strong> 虽然是一个右值，但进入<strong>right_value_2_left_value</strong>这个函数中后，被转换成了左值。</p>
+<h2 id="转移语义">转移语义</h2><p>右值引用是用来支持转移语义的。转移语义可以将资源 ( 堆，系统对象等 ) 从一个对象转移到另一个对象，这样能够减少不必要的临时对象的创建、拷贝以及销毁，能够大幅度提高 C++ 应用程序的性能。临时对象的维护 ( 创建和销毁 ) 对性能有严重影响。<br>转移语义是和拷贝语义相对的，可以类比文件的剪切与拷贝，当我们将文件从一个目录拷贝到另一个目录时，速度比剪切慢很多。<br>通过转移语义，临时对象中的资源能够转移其它的对象里。<br>在现有的 C++ 机制中，如果我们要实现转移语义，需要定义转移构造函数，还可以定义转移赋值操作符。对于右值的拷贝和赋值会调用转移构造函数和转移赋值操作符。如果转移构造函数和转移拷贝操作符没有定义，那么就遵循现有的机制，拷贝构造函数和赋值操作符会被调用。<br>普通的函数和操作符也可以利用右值引用操作符实现转移语义。</p>
+<p>比如我们在<strong>MyString</strong>中加入转移构造函数和转移复制函数，具体代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//转移构造函数</span></span><br><span class="line">MyString(MyString&amp;&amp; str) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Move Constructor is called! source: "</span> &lt;&lt; str._data</span><br><span class="line">            &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    _len = str._len;</span><br><span class="line">    _data = str._data;</span><br><span class="line">    str._len = <span class="number">0</span>;</span><br><span class="line">    str._data = <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//转移复制函数</span></span><br><span class="line">MyString&amp; <span class="keyword">operator</span>=(MyString&amp;&amp; str) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Move Assignment is called! source: "</span> &lt;&lt; str._data</span><br><span class="line">            &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> != &amp;str) &#123;</span><br><span class="line">        _len = str._len;</span><br><span class="line">        _data = str._data;</span><br><span class="line">        str._len = <span class="number">0</span>;</span><br><span class="line">        str._data = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>添加完成后，重新运行测试程序，可以得到新的输出如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">##########Begin Rvalue Test##########</span></span><br><span class="line">Constructor is called! source: Hello World <span class="number">1</span></span><br><span class="line">Constructor is called! source: Hello world <span class="number">2</span></span><br><span class="line">Move Assignment is called! source: Hello world <span class="number">2</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Constructor is called! source: Hello World <span class="number">3</span></span><br><span class="line">Move Constructor is called! source: Hello World <span class="number">3</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Constructor is called! source: Hello World <span class="number">5</span></span><br><span class="line">Hello World <span class="number">5</span></span><br><span class="line"><span class="preprocessor">##########End Rvalue Test##########</span></span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br><span class="line">Deconstructor is called</span><br></pre></td></tr></table></figure>
+<p>从结果可以看到，程序中有两个地方使用到了临时变量，第一处是赋值语句 <strong>a = MyString(“Hello world 2”);</strong>，在实现了转移复制函数后，这次赋值操作已经改为调用转移复制函数。第二处是函数传递参数<strong>vec.push_back(“Hello World 3”);</strong>，这里的操作已经改为调用转移构造函数。</p>
+<p>这样的结果基本说明了转移语义的作用，在没有转移语义的时候，程序在<strong>a = MyString(“Hello world 2”);</strong> 和 <strong>vec.push_back(“Hello World 3”);</strong>这两处对两个临时变量实行了两次无用的复制操作，并且内存中每个临时变量有两个副本，一个是临时变量本身，另一个被拷贝到对应的左值中，同事在析构的时候，也要执行两次无用的内存释放操作来释放临时变量的内存。而定义了转移语义之后，这三个方面不必要性能消耗都已经被避免了。首先，转移操作通过内部资源的交换实现对左值的更新，避免了内存拷贝，同时也避免了临时变量中保存多余的内容，并且在析构过程中，由于转移操作将空指针转移给临时变量，所以不需要额外的内存释放操作。所以转移语义即节省了时间，有节省了空间</p>
+<p>实现转移构造函数和转移赋值函数是要注意一下方面：</p>
+<ol>
+<li>参数必须是右值引用 &amp;&amp;</li>
+<li>参数不能是常量，因为转移操作中需要修改参数</li>
+<li>参数中资源需要妥善处理，避免参数被析构后，导致转移到的新对象不可用</li>
+</ol>
+<p>有了右值引用和转移语义，我们在设计和实现类时，对于需要动态申请大量资源的类，应该设计转移构造函数和转移赋值函数，以提高应用程序的效率。</p>
+<h2 id="std::move">std::move</h2><p>由上文可以看出，在C++程序中，虽然转移操作可以节省空间和时间，但是只有右值才能触发转移操作。而C++中所有的命名对象都是左值，那如果当我们明确知道一个左值已经不会再被使用，希望内部资源可以交换给别的左值时如何使用转移语义呢？这是时候需要使用标准库中的std::move()操作，这个操作将一个左值变成一个右值，进而使用转移操作。具体例子如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process_function</span><span class="params">(<span class="keyword">int</span> &amp; i)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Left Value: "</span> &lt;&lt; i &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process_function</span><span class="params">(<span class="keyword">int</span> &amp;&amp; i)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Right Value: "</span> &lt;&lt; i &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> ** argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">2</span>;</span><br><span class="line">    process_function(i);</span><br><span class="line">    process_function(<span class="built_in">std</span>::move(i));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//运行结果</span></span><br><span class="line">Left Value: <span class="number">2</span></span><br><span class="line">Right Value: <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<h2 id="精确传递">精确传递</h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://shijianguang.github.io/2016/08/28/C-右值引用和转移语义/" data-id="cisg8uycq000hdqs6xoummowf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/08/27/C-wchar-t-表示中文字符/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">C++ wchar_t 表示中文字符</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+</section>
+      
+        <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">recents</h3>
+    <div class="widget">
+      <ul id="recent-post" class="">
+        
+          <li>
+            
+            <div class="item-thumbnail">
+              <a href="/2016/08/28/C-右值引用和转移语义/" class="thumbnail">
+  
+    <span class="thumbnail-image thumbnail-none"></span>
+  
+</a>
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category"></p>
+              <p class="item-title"><a href="/2016/08/28/C-右值引用和转移语义/" class="title">C++ 右值引用和转移语义</a></p>
+              <p class="item-date"><time datetime="2016-08-28T04:13:02.000Z" itemprop="datePublished">2016-08-28</time></p>
+            </div>
+          </li>
+        
+          <li>
+            
+            <div class="item-thumbnail">
+              <a href="/2016/08/27/C-wchar-t-表示中文字符/" class="thumbnail">
+  
+    <span class="thumbnail-image thumbnail-none"></span>
+  
+</a>
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category"><a class="article-category-link" href="/categories/Work/">Work</a></p>
+              <p class="item-title"><a href="/2016/08/27/C-wchar-t-表示中文字符/" class="title">C++ wchar_t 表示中文字符</a></p>
+              <p class="item-date"><time datetime="2016-08-27T12:32:36.000Z" itemprop="datePublished">2016-08-27</time></p>
+            </div>
+          </li>
+        
+          <li>
+            
+            <div class="item-thumbnail">
+              <a href="/2016/08/15/Tips-of-Java/" class="thumbnail">
+  
+    <span class="thumbnail-image thumbnail-none"></span>
+  
+</a>
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category"><a class="article-category-link" href="/categories/Work/">Work</a></p>
+              <p class="item-title"><a href="/2016/08/15/Tips-of-Java/" class="title">Tips of Java</a></p>
+              <p class="item-date"><time datetime="2016-08-15T07:38:50.000Z" itemprop="datePublished">2016-08-15</time></p>
+            </div>
+          </li>
+        
+          <li>
+            
+            <div class="item-thumbnail">
+              <a href="/2015/08/16/CSAPP-Optimizing-Program-Performance/" class="thumbnail">
+  
+    <span class="thumbnail-image thumbnail-none"></span>
+  
+</a>
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category"><a class="article-category-link" href="/categories/Reading-Note/">Reading Note</a></p>
+              <p class="item-title"><a href="/2015/08/16/CSAPP-Optimizing-Program-Performance/" class="title">Optimizing Program Performance</a></p>
+              <p class="item-date"><time datetime="2015-08-16T05:54:40.000Z" itemprop="datePublished">2015-08-16</time></p>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Note/">Reading Note</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Work/">Work</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Charset/">Charset</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/System-Programming/">System Programming</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">tag cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-C/" style="font-size: 20px;">C/C++</a> <a href="/tags/Charset/" style="font-size: 10px;">Charset</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/System-Programming/" style="font-size: 10px;">System Programming</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+  <div id="toTop" class="fa fa-chevron-up"></div>
+</aside>
+      
+    </div>
+    <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 - 2016 Jianguang Shi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+    </div>
+  </div>
+</footer>
+    
+
+
+<script src="//ajax.useso.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
